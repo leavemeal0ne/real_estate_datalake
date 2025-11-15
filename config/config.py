@@ -22,9 +22,11 @@ FLAT_GRID_DATA_PATTERN='^RealtyCard_propertyGrid_*?' # class_
 FLAT_DATA_INSIDE_GRID_PATTERN='^RealtyPropertiesItem_text*?' # class_
 
 #REALTY DATA FOR INDIVIDUAL UNIT
-REALTY_PRICE_DATA = '^RealtyDetails_priceMain_*?$'
-REALTY_LOCATION_DATA = "^RealtyLocation_item_*?$" #class_ in a tag, may contain 2 or more values
+REALTY_PRICE_PATTERN = 'RealtyDetails_priceMain_'
+REALTY_DESCRIPTION_PATTERN = 'ExpandableText_text'
+REALTY_LOCATION_PATTERN = "RealtyLocation_item" #class_ in a tag, may contain 2 or more values
 #realty details data inside the grid container
-REALTY_DETAILS_DATA = '^RealtyPropertiesItem_text_*?$'
-RALTY_DESCRIPTION_DATA = 'ExpandableText_text'
+REALTY_PROPERTIES_PATTERN = 'RealtyPropertiesItem_text'
+REALTY_FURNITURE_PATTERN = 'RealtyFurniture_text'
+
 
