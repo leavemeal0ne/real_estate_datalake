@@ -6,6 +6,7 @@ def flat_filter(tag):
             tag.has_attr('class')
             and len(tag['class']) == 1
             and len(re.findall(FLAT_BASE_PATTERN, tag['class'][0])) == 1
+            and len(tag.text) != 0
         ):
         return True
     return False

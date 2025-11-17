@@ -1,9 +1,9 @@
 # url adresses
-PARSE_URL = 'https://lun.ua/rent/uz/flats?sort=price-asc&page={page_number}'
+REALTY_PAGE_URL = 'https://lun.ua/rent/uz/flats?sort=price-asc&page={page_number}'
 FLAT_BASE_URL = 'https://lun.ua/realty/'
 
 # last page flag
-FLAT_EMPTY_ROOT='^RealtiesEmpty_root*?'
+REALTY_EMPTY_ROOT='^RealtiesEmpty_root*?'
 
 # value of class attribute of flat div
 FLAT_BASE_PATTERN='^RealtiesLayout_resultsItem__xapRs$'
@@ -28,5 +28,6 @@ REALTY_LOCATION_PATTERN = "RealtyLocation_item" #class_ in a tag, may contain 2 
 #realty details data inside the grid container
 REALTY_PROPERTIES_PATTERN = 'RealtyPropertiesItem_text'
 REALTY_FURNITURE_PATTERN = 'RealtyFurniture_text'
+REALTY_GALLERY_SLIDER_PATTERN = 'NativeGallery_slide'
 
 

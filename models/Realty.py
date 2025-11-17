@@ -27,7 +27,7 @@ update_date
 discovery_date
 """
 class Realty:
-    __realty_url = 'https://lun.ua/realty/'
+    __realty_url = 'https://lun.ua/realty/{}'
     __list_of_rooms = ['main_room',
                      'kitchen',
                      'bathroom']
@@ -119,7 +119,7 @@ class Realty:
     #process square of rooms property
     def __process_rooms_square_p(self,properties:list):
         for i, prop in enumerate(properties):
-            pattern = '([0-9]+|-)/([0-9]+|-)/([0-9]+|-)'
+            pattern = '([0-9]+|-)/([0-9]+|-)/([0-9]+|-)' #some units may contain only main room value e.g '38 m2'
             prop = re.sub(' ','',prop)
             match = re.search(pattern=pattern, string=prop, flags=re.IGNORECASE)
             if match is not None:
@@ -169,3 +169,11 @@ class Realty:
             raise e
         else:
             self.__price = price
+
+    def __str__(self):
+        str_value = "Realty object;\nprice : {}\ncount of rooms : {}\nlocation : {}".format(
+     self.__price,
+            self.__count_of_rooms,
+            self.__location
+        )
+        return str_value
