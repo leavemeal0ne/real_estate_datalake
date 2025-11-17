@@ -48,7 +48,7 @@ object1 = Realty(
     price=data[0],
     location=data[1],
     description=data[2],
-    properties=data[3],
+    properties=data[3].copy(),
     furniture=data[4],
     img_link='3232'
                  )

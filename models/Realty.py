@@ -1,9 +1,37 @@
 import re
+from utils.DateFormatter import DateFormatter
+
+"""
+obj values:
+realty_id: e.g. lun_12312 dim_ria_123221
+
+location:
+price:
+description:
+img_link:
+
+count_of_rooms
+description:
+
+main_room_square
+kitchen_square
+bathroom_square
+
+property_dict
+furniture_dict
+
+realty_floor
+realty_max_floors
+
+update_date
+discovery_date
+"""
 class Realty:
     __realty_url = 'https://lun.ua/realty/'
     __list_of_rooms = ['main_room',
                      'kitchen',
                      'bathroom']
+    __recent_date_pattern = r'^(знайдено|оновлено)\s+(сьогодні|вчора)(|\s+о\s+\d+:\d+)$'
     def __init__(
             self,*,
             realty_id,
@@ -15,7 +43,7 @@ class Realty:
             img_link):
         self.__price_process(price)
         self.__img_link = img_link
-        self.__id = realty_id
+        self.__realty_id = realty_id
         self.__location = " - ".join(location)
         self.__description = re.sub('\n\n','\n', description)
         self.__property_process(properties)
@@ -25,12 +53,51 @@ class Realty:
         self.__process_count_of_rooms_p(properties) # count of rooms
         self.__process_rooms_square_p(properties)
         self.__process_floor_p(properties)
+        self.__process_update_date_p(properties)
+        self.__process_discovery_date_p(properties)
+        self.__property_dict = {}
+        for property_value in properties:
+            self.__property_dict[property_value] = True
+        return
 
     def __process_furniture(self, furniture):
         self.__furniture_dict = {}
         for furniture_value in furniture:
             self.__furniture_dict[furniture_value] = True
         return
+
+    def __process_date_property(self, properties, keyword, attr_name):
+        for i, prop in enumerate(properties):
+            if re.search(keyword, prop, flags=re.IGNORECASE):
+                recent_date_condition, value = self.__recent_date_info(prop)
+
+                if recent_date_condition:
+                    date_value = DateFormatter.date_formatter(value)
+                else:
+                    date_value = DateFormatter.date_formatter(
+                        re.search(r'(.+? )(\d+ .+)', prop, flags=re.IGNORECASE).groups()[1]
+                    )
+
+                setattr(self, attr_name, date_value)
+                properties.pop(i)
+                return
+
+        raise ValueError(f"no {keyword} date")
+
+    def __process_discovery_date_p(self, properties):
+        self.__process_date_property(properties, "знайдено", "_{}__discovery_date".format(self.__class__.__name__))
+
+    def __process_update_date_p(self, properties):
+        self.__process_date_property(properties, "оновлено", "_{}__update_date".format(self.__class__.__name__))
+
+
+    def __recent_date_info(self, date_str):
+        today_yesterday_match = re.search(pattern=self.__recent_date_pattern,
+                                          string=date_str, flags=re.IGNORECASE)
+        if today_yesterday_match is not None:
+            return True, "".join(today_yesterday_match.groups()[1:])
+        else:
+            return False, None
 
 
     #process count of rooms property
@@ -65,7 +132,7 @@ class Realty:
                 else:
                     for room_value in zip(self.__list_of_rooms,rooms_data):
                         value = room_value[1] if isinstance(room_value[1], int) else None
-                        setattr(self, f"__{room_value[0]}_square", value) # change to modify dict
+                        setattr(self, f"_{self.__class__.__name__}__{room_value[0]}_square", value)
                     properties.pop(i)
                     return
         raise ValueError("There is no property with square of rooms data")

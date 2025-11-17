@@ -5,7 +5,7 @@ class DateFormatter:
     timezone = timezone(timedelta(hours=0))
     __number_pattern = re.compile(r'\d+')
     __string_pattern = re.compile(r'[^0-9\s]+')
-    __time_pattern = re.compile(r'(\d{1,2}).(\d{2})')
+    __time_pattern = re.compile(r'(\d{1,2}):(\d{2})')
     __months_dict = {
         'січня':1,
         'лютого':2,

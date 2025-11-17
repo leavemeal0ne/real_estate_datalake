@@ -1,5 +1,4 @@
 import os
-
 import requests
 import re
 from bs4 import BeautifulSoup
@@ -49,7 +48,7 @@ def extract_id_from_flat_tag(flat):
 """
 
 def parse_flat_by_id(flat_id):
-
+    pass
 
 def flats_parser():
     for page in range(1,11):
