@@ -91,6 +91,9 @@ class Realty:
         self.__process_date_property(properties, "оновлено", "_{}__update_date".format(self.__class__.__name__))
 
 
+    def get_discovery_date(self):
+        return self.__discovery_date.date()
+
     def __recent_date_info(self, date_str):
         today_yesterday_match = re.search(pattern=self.__recent_date_pattern,
                                           string=date_str, flags=re.IGNORECASE)

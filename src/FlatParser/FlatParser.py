@@ -10,7 +10,7 @@ import time
 from models.Realty import Realty
 from datetime import date
 import csv
-
+import math
 
 class FlatsParser:
                             #flats?insert_date_min=2025-11-22&insert_date_max=2025-11-25&sort=insert_time&page=12
@@ -19,8 +19,27 @@ class FlatsParser:
     __page_load_timeout_ms = 10000 #10s
     __locator_timeout_ms = 10000 #10s
     __max_number_of_pages = 2 #10000000000
+    __count_of_unites_per_page = 24
     __file_format = 'realty_data_{date}.csv'
-    def extract_realty_ids_from_lun_page(self,html_page: str):
+    __realty_count_pattern = r'.?RealtiesTitle_resultsCount.?'
+
+    def extract_units_count_from_lun_page(self,html_page):
+        soup = BeautifulSoup(html_page, 'html.parser')
+        result_tag = soup.find('span', class_=re.compile(self.__realty_count_pattern))
+        text = result_tag.text.replace(" ","").replace("\u00A0", "")
+        units_count_pattern = r'по(\d+)о.*?'
+        try:
+            units_count = int(re.search(units_count_pattern, text,flags=re.IGNORECASE).groups()[0])
+        except ValueError as e:
+            print("Unable to parse count of units")
+            raise e
+        else:
+            return units_count
+
+    def get_number_of_pages(self,number_of_units):
+        return math.ceil(number_of_units/self.__count_of_unites_per_page)
+
+    def extract_realty_ids_from_lun_page(self,html_page):
         """
         This function extracts id`s of flat`s from page
         :param html_page:
@@ -100,24 +119,40 @@ class FlatsParser:
         if not isinstance(search_date,date):
             raise ValueError("date object must be of type datetime, instead get:{} ".format(type(date)))
         all_realty = []
-        for page_number in range(1, self.__max_number_of_pages+1):
-            str_date = search_date.strftime("%Y-%m-%d")
-            page_url = self.__lun_realty_kyiv_url.format(d_min=str_date,d_max=str_date,page_n=page_number)
-            try:
-                response = requests.get(page_url)
-            except requests.exceptions.RequestException as e:
-                print("error while parsing page", e)
-                continue
-            else:
-                #extract_realty_ids_from_lun_page will return None if there is no more realty data
-                ids = self.extract_realty_ids_from_lun_page(response.text)
-                if ids is None:
-                    break
-                realty_objects = [self.parse_realty_by_id(realty_id) for realty_id in ids]
-                all_realty.extend(realty_objects)
-        all_realty = [realty.list_representation() for realty in all_realty if realty is not None]
-        #all_realty.insert(0, Realty.list_representation_fields())
-        return all_realty
+        str_date = search_date.strftime("%Y-%m-%d")
+        page_url = self.__lun_realty_kyiv_url.format(d_min=str_date,d_max=str_date,page_n=1)
+        try:
+            response = requests.get(page_url)
+        except requests.exceptions.RequestException as e:
+            print("error while parsing page for units count", e)
+            raise e
+        else:
+            count_of_units = self.extract_units_count_from_lun_page(response.text)
+            start_page = self.get_number_of_pages(count_of_units)
+            for page_number in range(start_page, 0,-1):
+                page_url = self.__lun_realty_kyiv_url.format(d_min=str_date,d_max=str_date,page_n=page_number)
+                print(page_url)
+                try:
+                    response = requests.get(page_url)
+                except requests.exceptions.RequestException as e:
+                    print("error while parsing page", e)
+                    continue
+                else:
+                    # extract_realty_ids_from_lun_page will return None if there is no more realty data
+                    ids = self.extract_realty_ids_from_lun_page(response.text)
+                    if ids is None:
+                        break
+                    # get realty object by id
+                    realty_objects = [self.parse_realty_by_id(realty_id) for realty_id in ids]
+                    all_realty.extend(realty_objects)
+                    # check for realty objects with different search date
+                    stop_condition = True in [realty.get_discovery_date() != search_date if realty is not None else False for realty in realty_objects]
+                    # stop search if there are no more relevant realty object
+                    if stop_condition:
+                        break
+            # clear realty list from None values and irrelevant objects
+            all_realty = [realty for realty in all_realty if realty is not None and realty.get_discovery_date() == search_date]
+            return all_realty
 
     def write_realty_to_a_csv(self,realty_data,date,file_format=None,file_location='data'):
         if len(realty_data) == 0:
@@ -130,13 +165,15 @@ class FlatsParser:
             writer = csv.writer(f,quoting=csv.QUOTE_NONNUMERIC)
             writer.writerow(Realty.list_representation_fields())
             writer.writerows(realty_data)
+        return file_name
 
     def create_Kyiv_realty_data_by_date(self,search_date:date):
         start_time = time.time()
-        data = self.extract_kyiv_realty_by_date(search_date)
-        self.write_realty_to_a_csv(realty_data=data,date=search_date)
+        raw_data = self.extract_kyiv_realty_by_date(search_date)
+        prepared_data = [realty.list_representation() for realty in raw_data]
+        file_name = self.write_realty_to_a_csv(realty_data=prepared_data,date=search_date)
         end_time = time.time()
-        print('processing time of {} pages is: {:.2f}m'.format(self.__max_number_of_pages,(end_time - start_time) / 60))
+        print('processing time of {} is: {:.2f}m'.format(file_name,(end_time - start_time) / 60))
 
 
     # def extract_realty_data(self):
