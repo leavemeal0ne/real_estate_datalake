@@ -119,7 +119,7 @@ class Realty:
     #process square of rooms property
     def __process_rooms_square_p(self,properties:list):
         for i, prop in enumerate(properties):
-            pattern = '([0-9]+|-)/([0-9]+|-)/([0-9]+|-)' #some units may contain only main room value e.g '38 m2'
+            pattern = '([0-9]+|-)/([0-9]+|-)/([0-9]+|-)' #some units may contain only main room value e.g '38 m2' or '60.9 / 30.1 / 12.7 м²'
             prop = re.sub(' ','',prop)
             match = re.search(pattern=pattern, string=prop, flags=re.IGNORECASE)
             if match is not None:
@@ -148,7 +148,8 @@ class Realty:
                 floor_match = re.search(pattern=data_pattern, string=prop, flags=re.IGNORECASE).groups()
                 try:
                     floor_match = [floor_match[0],floor_match[2]]
-                except IndexError as e:
+                    floor_match = [int(floor) for floor in floor_match]
+                except (IndexError,ValueError) as e:
                     print("Wrong floor parse result: {}".format(floor_match))
                     raise e
                 else:
@@ -169,6 +170,34 @@ class Realty:
             raise e
         else:
             self.__price = price
+
+    @staticmethod
+    def list_representation_fields():
+        return ["id",
+                "price",
+                "location",
+                "count_of_rooms",
+                "realty_floor",
+                "realty_max_floors",
+                "main_room_square",
+                "kitchen_square",
+                "bathroom_square",
+                "discovery_date"]
+
+    def  list_representation(self):
+            return [
+                self.__realty_id,
+                self.__price,
+                self.__location,
+                self.__count_of_rooms,
+                self.__realty_floor,
+                self.__realty_max_floors,
+                self.__main_room_square,
+                self.__kitchen_square,
+                self.__bathroom_square,
+                self.__discovery_date.strftime('%Y-%m-%d'),
+                self.__property_dict,
+                self.__furniture_dict]
 
     def __str__(self):
         str_value = "Realty object;\nprice : {}\ncount of rooms : {}\nlocation : {}".format(
