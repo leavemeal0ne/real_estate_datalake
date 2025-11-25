@@ -1,17 +1,9 @@
-from FlatParser import FlatsParser
+from FlatParser.FlatParser import FlatsParser
+import datetime
 import time
-import csv
+
 def main():
-    start_time = time.time()
-    parser = FlatsParser()
-    realty_objects = parser.extract_realty_data()
-    print(len(realty_objects))
-    end_time = time.time()
-    print("{:.2f}m".format((end_time - start_time) / 60))
-    return realty_objects
+    FlatsParser().create_Kyiv_realty_data_by_date(datetime.date.today())
 
 if __name__ == '__main__':
-    data = main()
-    with open("test_data.csv", "w", encoding='utf-8',newline="") as f:
-        writer = csv.writer(f,quoting=csv.QUOTE_NONNUMERIC)
-        writer.writerows(data)
+    main()

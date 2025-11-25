@@ -182,7 +182,9 @@ class Realty:
                 "main_room_square",
                 "kitchen_square",
                 "bathroom_square",
-                "discovery_date"]
+                "discovery_date",
+                "property_list",
+                "furniture_list"]
 
     def  list_representation(self):
             return [
@@ -196,8 +198,8 @@ class Realty:
                 self.__kitchen_square,
                 self.__bathroom_square,
                 self.__discovery_date.strftime('%Y-%m-%d'),
-                self.__property_dict,
-                self.__furniture_dict]
+                list(self.__property_dict.keys()),
+                list(self.__furniture_dict.keys())]
 
     def __str__(self):
         str_value = "Realty object;\nprice : {}\ncount of rooms : {}\nlocation : {}".format(
