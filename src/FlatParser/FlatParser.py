@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import config.config as config
 from utils.TagFilter import flat_filter
 from playwright.sync_api import sync_playwright
+from playwright_stealth import Stealth
 import time
 from models.Realty import Realty
 from datetime import date
@@ -66,9 +67,9 @@ class FlatsParser:
             return unique_id_int
 
     def parse_realty_by_id(self,realty_id):
-        with sync_playwright() as p:
+        with Stealth().use_sync(sync_playwright()) as p:
             print("processing {}".format(realty_id))
-            browser = p.chromium.launch(headless=False)
+            browser = p.chromium.launch(headless=True)
             context = browser.new_context()
             context.set_default_timeout(self.__page_load_timeout_ms)
             context.set_default_navigation_timeout(self.__locator_timeout_ms)
@@ -154,7 +155,7 @@ class FlatsParser:
             all_realty = [realty for realty in all_realty if realty is not None and realty.get_discovery_date() == search_date]
             return all_realty
 
-    def write_realty_to_a_csv(self,realty_data,date,file_format=None,file_location='data'):
+    def write_realty_to_a_csv(self,realty_data,date,file_format=None,file_location='/opt/airflow/data'):
         if len(realty_data) == 0:
             raise ValueError("data cannot be empty")
         file_format = self.__file_format if file_format is None else file_format
@@ -174,6 +175,7 @@ class FlatsParser:
         file_name = self.write_realty_to_a_csv(realty_data=prepared_data,date=search_date)
         end_time = time.time()
         print('processing time of {} is: {:.2f}m'.format(file_name,(end_time - start_time) / 60))
+        return file_name
 
 
     # def extract_realty_data(self):

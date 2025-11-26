@@ -5,9 +5,12 @@
 __pycache__/
 *.png
 *.yml
-*.yaml
+#*.yaml
 test
 *.csv
 airflow_config
 data
 etc
+file_data
+*.txt
+logs
