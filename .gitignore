@@ -14,3 +14,7 @@ etc
 file_data
 *.txt
 logs
+*.terraform
+.terraform.lock.hcl
+*.tfstate
+terraform.tfstate.backup
