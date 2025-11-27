@@ -1,9 +1,7 @@
 .venv
-*.html
 *.env
 .idea/
 __pycache__/
-*.png
 *.yml
 #*.yaml
 test
